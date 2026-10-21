@@ -19,6 +19,8 @@ class TenantDatabaseSeeder extends Seeder
           TenantCourseSeeder::class,
           TenantModuleSeeder::class,
           TenantTopicSeeder::class,
+          TenantAssessmentSeeder::class,
+          TenantEnrollmentSeeder::class,
           TenantCertificateTemplateCategorySeeder::class,
           TenantCertificateTemplateSeeder::class,
           TenantTrainingCreditSeeder::class

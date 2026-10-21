@@ -33,7 +33,7 @@ Seeded accounts (password `password` for all three):
 | Instructor | `instructor@mail.com` |
 | Learner | `user@mail.com` |
 
-The seeders also create a sample course with modules and topics, a default certificate template and the training credit types.
+The seeders also create a sample course with two modules and their topics, a three-question graded quiz (passing score 50%, up to 3 attempts), a default certificate template and the training credit types. The learner account is already enrolled in the sample course, so it can open the course and take the quiz straight away.
 
 To start over with an empty, freshly seeded database:
 
