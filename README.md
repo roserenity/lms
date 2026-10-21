@@ -66,7 +66,7 @@ On first boot the API container runs the migrations and seeders (users, a sample
 
 To start over with an empty, freshly seeded database: `docker compose down -v && docker compose up --build`.
 
-Integrations that need third-party accounts (Zoom, Vimeo, SCORM Cloud, Google Drive) are not configured in this setup; the rest of the app works without them.
+Integrations that need third-party accounts (Zoom, Vimeo, SCORM Cloud, Google Drive) are not configured in this setup; the rest of the app works without them. Group activity files (shared Google Docs, Sheets and Slides) need a Google service account key at `csc-educat-backend/storage/key/google-service-account.json`; without it, generating a file returns a "not configured" message.
 
 ## Running locally without Docker
 

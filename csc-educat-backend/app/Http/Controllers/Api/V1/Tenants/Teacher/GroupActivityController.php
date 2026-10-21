@@ -347,6 +347,10 @@ class GroupActivityController extends Controller
 
       $google_drive_service = app(GoogleDriveService::class);
 
+      if (!$google_drive_service->isConfigured()) {
+        return $this->sendResponse([], 'Google Drive integration is not configured. Add a service account key to enable group activity files.', 503);
+      }
+
       if($group_activity_group->file_id)
       {
         $google_drive_service->deleteFile($group_activity_group->file_id);

@@ -347,12 +347,12 @@ export default {
                 }) 
                 this.getGroups()
                 this.selected = null
-            }).catch(() => {
+            }).catch(err => {
                 this.selected = null
                 this.generateLoading = false
                 this.alertMutation({
                     show: true,
-                    text: "Something went wrong.",
+                    text: (err.response && err.response.data && err.response.data.message) || "Something went wrong.",
                     type: "error"
                 }) 
             })

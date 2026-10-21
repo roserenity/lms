@@ -49,6 +49,12 @@ class GoogleDriveService
 
     }
 
+    // False when no service account key was found, e.g. in local Docker setups.
+    public function isConfigured()
+    {
+        return $this->driveService !== null;
+    }
+
     public function createFolderHierarchy($tenantName, $courseName, $activityName, $email = null)
     {
         $tenantFolderId = $this->createFolder($tenantName, null, $email);
@@ -153,9 +159,13 @@ class GoogleDriveService
 
     public function deleteFile($fileId)
         {
+            if (!$this->isConfigured()) {
+                return;
+            }
+
             try {
                 $this->driveService->files->delete($fileId);
-                echo "File with ID {$fileId} deleted successfully.";
+                Log::info("File with ID {$fileId} deleted successfully.");
             } catch (\Google\Service\Exception $e) {
                 Log::info('Error deleting file: ' . $e->getMessage());
             }
