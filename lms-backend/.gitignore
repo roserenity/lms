@@ -15,3 +15,7 @@ yarn-error.log
 /.idea
 /.vscode
 .DS_Store
+
+# Service account keys
+/storage/key/
+/storage/storage/

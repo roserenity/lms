@@ -4,9 +4,9 @@ A learning management system for delivering courses, assessments and certificate
 
 | Part | Path | Stack |
 |---|---|---|
-| Backend API | [`csc-educat-backend/`](csc-educat-backend/) | Laravel 11, PHP 8.2+, MySQL 8, Redis |
-| Frontend SPA | [`csc-educat-frontend/`](csc-educat-frontend/) | Vue 2.7, Vuetify 2, Vuex 3 |
-| Real-time server | [`csc-educat-backend/server.js`](csc-educat-backend/server.js) | Node.js, Socket.io, Redis pub/sub |
+| Backend API | [`lms-backend/`](lms-backend/) | Laravel 11, PHP 8.2+, MySQL 8, Redis |
+| Frontend SPA | [`lms-frontend/`](lms-frontend/) | Vue 2.7, Vuetify 2, Vuex 3 |
+| Real-time server | [`lms-backend/server.js`](lms-backend/server.js) | Node.js, Socket.io, Redis pub/sub |
 
 ## Quick start
 
@@ -97,21 +97,21 @@ Vue SPA ──► Laravel API ──► MySQL
 
 ### Third-party integrations
 
-Zoom, Vimeo, SCORM Cloud and Google Drive need their own accounts and are not configured in the Docker setup. The rest of the app works without them. Group activity files need a Google service account key at `csc-educat-backend/storage/key/google-service-account.json`; without it, generating a file returns a "not configured" message instead of failing.
+Zoom, Vimeo, SCORM Cloud and Google Drive need their own accounts and are not configured in the Docker setup. The rest of the app works without them. Group activity files need a Google service account key at `lms-backend/storage/key/google-service-account.json`; without it, generating a file returns a "not configured" message instead of failing.
 
 ## Repository layout
 
 ```
 .
 ├── docker-compose.yml          Local stack
-├── csc-educat-backend/
+├── lms-backend/
 │   ├── app/                    Controllers, models, services, jobs, exports
 │   ├── database/migrations/    Central and tenant (tenant/) schemas
 │   ├── database/seeders/       Demo data
 │   ├── routes/                 API routes per role
 │   ├── docker/                 Entrypoint and socket server image
 │   └── server.js               Socket.io server
-└── csc-educat-frontend/
+└── lms-frontend/
     └── src/
         ├── views/, components/ Admin, instructor and learner screens
         ├── store/              Vuex modules per role
@@ -124,7 +124,7 @@ Requirements: PHP 8.2+, Composer, MySQL 8, Redis and Node.js 16.
 
 ```bash
 # Backend
-cd csc-educat-backend
+cd lms-backend
 cp .env.example .env
 composer install
 php artisan key:generate
@@ -135,7 +135,7 @@ php artisan queue:work --tries=3   # separate terminal
 npm install && node server.js      # separate terminal, Socket.io on port 6002
 
 # Frontend
-cd csc-educat-frontend
+cd lms-frontend
 cp .env.example .env               # set VUE_APP_API to the backend URL
 npm install --legacy-peer-deps
 npm run serve
@@ -143,15 +143,15 @@ npm run serve
 
 ## Known limitations
 
-- The Zoom Meeting SDK signature is generated in the browser (`csc-educat-frontend/src/services/jsrsasign.js`), which exposes the SDK secret to clients. It should move to a backend endpoint.
+- The Zoom Meeting SDK signature is generated in the browser (`lms-frontend/src/services/jsrsasign.js`), which exposes the SDK secret to clients. It should move to a backend endpoint.
 - There is no automated test suite.
 - The frontend is on Vue 2, which reached end of life in December 2023, and on Vue CLI 4, which needs Node 16 to build.
 
 ## Further documentation
 
 - [Project overview](PROJECT_OVERVIEW.md)
-- [Database schema](csc-educat-backend/database_schema.md)
-- [Role permissions](csc-educat-backend/ROLE_PERMISSIONS.md)
-- [OpenAPI spec](csc-educat-backend/api.yaml)
-- [Frontend architecture](csc-educat-frontend/architecture.md)
-- Standalone setup: [backend](csc-educat-backend/STANDALONE_SETUP.md), [frontend](csc-educat-frontend/STANDALONE_SETUP.md)
+- [Database schema](lms-backend/database_schema.md)
+- [Role permissions](lms-backend/ROLE_PERMISSIONS.md)
+- [OpenAPI spec](lms-backend/api.yaml)
+- [Frontend architecture](lms-frontend/architecture.md)
+- Standalone setup: [backend](lms-backend/STANDALONE_SETUP.md), [frontend](lms-frontend/STANDALONE_SETUP.md)

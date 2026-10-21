@@ -7,7 +7,7 @@
 # The credentials below are throwaway values for local use only.
 
 x-backend: &backend
-  build: ./csc-educat-backend
+  build: ./lms-backend
   environment: &backend-env
     APP_NAME: Aster Academy LMS
     APP_ENV: local
@@ -140,7 +140,7 @@ services:
 
   socket:
     build:
-      context: ./csc-educat-backend
+      context: ./lms-backend
       dockerfile: docker/socket.Dockerfile
     environment:
       REDIS_HOST: redis
@@ -151,7 +151,7 @@ services:
 
   web:
     build:
-      context: ./csc-educat-frontend
+      context: ./lms-frontend
       args:
         VUE_APP_NAME: Aster Academy LMS
         VUE_APP_API: http://localhost:8000/v1

@@ -4,7 +4,7 @@ import router from '../router'
 
 Vue.use(VueGtag, {
   config: { 
-    id: "UA-203440965-1",
+    id: process.env.VUE_APP_GA_TRACKING_ID,
     params: {
       send_page_view: true
     }

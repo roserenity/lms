@@ -1,15 +1,15 @@
-# CSC eLearning Platform — Project Overview
+# Aster Academy LMS — Project Overview
 
 ## Summary
 
-**csc-educat** is a multi-tenant Learning Management System (LMS) built for the Civil Service Commission (CSC). It manages courses, assessments, certifications, and user interactions across isolated tenant environments.
+**Aster Academy LMS** is a multi-tenant Learning Management System (LMS). It manages courses, assessments, certifications, and user interactions across isolated tenant environments.
 
 The system is split into two sub-projects under a monorepo:
 
 | Sub-project | Path | Stack |
 |---|---|---|
-| Backend API | `csc-educat-backend/` | Laravel 11 (PHP 8.3) |
-| Frontend SPA | `csc-educat-frontend/` | Vue.js 2 + Vuetify 2 |
+| Backend API | `lms-backend/` | Laravel 11 (PHP 8.3) |
+| Frontend SPA | `lms-frontend/` | Vue.js 2 + Vuetify 2 |
 
 ---
 
@@ -45,7 +45,7 @@ The frontend connects via `socket.io-client` + `laravel-echo`.
 
 ## Tech Stack
 
-### Backend (`csc-educat-backend`)
+### Backend (`lms-backend`)
 
 | Category | Technology |
 |---|---|
@@ -72,7 +72,7 @@ The frontend connects via `socket.io-client` + `laravel-echo`.
 | Deployment | AWS Elastic Beanstalk + Nginx |
 | Process mgr | PM2 (queue worker) |
 
-### Frontend (`csc-educat-frontend`)
+### Frontend (`lms-frontend`)
 
 | Category | Technology |
 |---|---|
@@ -101,8 +101,8 @@ The frontend connects via `socket.io-client` + `laravel-echo`.
 ## Project Structure
 
 ```
-csc/
-├── csc-educat-backend/
+lms/
+├── lms-backend/
 │   ├── app/
 │   │   ├── Models/          # 90+ Eloquent models
 │   │   ├── Http/            # Controllers, Middleware, Requests, Resources
@@ -132,7 +132,7 @@ csc/
 │   ├── .ebextensions/       # AWS Elastic Beanstalk configs
 │   └── .platform/           # Nginx + post-deploy hooks
 │
-└── csc-educat-frontend/
+└── lms-frontend/
     ├── src/
     │   ├── components/      # admin/, teacher/, user/, super/, reusable/
     │   ├── views/           # Page components per role
