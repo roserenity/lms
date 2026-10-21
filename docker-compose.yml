@@ -2,7 +2,7 @@
 #   App      http://localhost:8090   (admin@mail.com / instructor@mail.com / user@mail.com, password: password)
 #   API      http://localhost:8000
 #   Mail     http://localhost:8026   (every outgoing email is caught here)
-#   Files    http://localhost:9001   (RustFS console, lmsadmin / lmsadmin123)
+#   Files    http://localhost:9001/rustfs/console/   (RustFS console, lmsadmin / lmsadmin123)
 #
 # The credentials below are throwaway values for local use only.
 
@@ -74,12 +74,12 @@ services:
     image: redis:7-alpine
 
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.30.6
     ports:
       - "8026:8025"
 
   storage:
-    image: rustfs/rustfs:latest
+    image: rustfs/rustfs:1.0.1
     environment:
       RUSTFS_ACCESS_KEY: lmsadmin
       RUSTFS_SECRET_KEY: lmsadmin123
@@ -92,7 +92,7 @@ services:
 
   # Creates the bucket and makes it publicly readable, then exits.
   storage-init:
-    image: amazon/aws-cli:latest
+    image: amazon/aws-cli:2.37.11
     depends_on:
       - storage
     environment:

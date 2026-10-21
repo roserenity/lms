@@ -23,7 +23,7 @@ On first boot the API container runs the migrations and seeders. Once the `api` 
 | App | http://localhost:8090 | see accounts below |
 | API | http://localhost:8000 | |
 | Mail catcher | http://localhost:8026 | every outgoing email lands here |
-| File storage console | http://localhost:9001 | `lmsadmin` / `lmsadmin123` |
+| File storage console | http://localhost:9001/rustfs/console/ | `lmsadmin` / `lmsadmin123` |
 
 Seeded accounts (password `password` for all three):
 
