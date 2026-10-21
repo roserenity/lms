@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Tenants\Admin;
+use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
+
+use App\Http\Requests\Tenants\ForumPostRequest;
+use App\Helpers\FilterHelper;
+
+use App\Models\ForumPost;
+use App\Services\Tenants\AttachmentService;
+use Carbon\Carbon;
+
+class ForumPostController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth.admin');
+    }
+
+    public function index(Request $request)
+    {
+
+        $posted_from = $request->posted_from ? Carbon::parse(request('posted_from'))->startOfMonth() : '';
+        $posted_to = $request->posted_to ? Carbon::parse(request('posted_to'))->endOfMonth() : '';
+
+        $forum_posts = ForumPost::with([
+              'course' => function($course) use ($request) {
+                $course->select(['id', 'title']);
+              },
+              'user' => function($user) {
+                $user->select(['id', 'first_name', 'last_name', 'suffix', 'email']);
+              }
+            ])
+            ->withCount('comments')
+            ->when(($posted_from || $posted_to), function ($query) use ($posted_from, $posted_to) {
+                FilterHelper::queryCreatedAt($query, $posted_from, $posted_to);
+            })
+            ->when(request('topic_category'), function($query, $request) {
+              $query->where('topic_category', request('topic_category'));
+            })
+            ->when(request('status'), function($query) {
+              $query->where('status', request('status'));
+            })
+            ->when(!empty(request('course_id')), function($query, $request) {
+              $query->whereIn('course_id', request('course_id'));
+            })
+            ->orderByDesc('is_pinned')
+            ->latest()
+            ->paginate($request->paginate);
+
+        return $this->sendResponse($forum_posts, 'List of forum posts', 200);
+    }
+
+    public function show($id)
+    {
+      
+      $post = ForumPost::where('id', $id)->with([
+          'course' => function($course) {
+            $course->select(['id', 'title']);
+          },
+          'user' => function($user) {
+            $user->select(['id', 'first_name', 'last_name', 'suffix', 'email']);
+          },
+          'comments' => fn ($comments) => $comments->with('replies')
+        ])
+        ->withCount('comments')
+        ->first();
+
+      if (!$post) {
+          return $this->sendResponse([], 'No forum post found.', 404);
+      }
+
+      return $this->sendResponse($post, 'Show forum post', 200);
+
+    }
+
+    public function store(ForumPostRequest $request) 
+    {
+
+      $post = ForumPost::create($request->all());
+      
+      if ($request->hasFile('attachments')) {
+        foreach ($request->file('attachments') as $file_attachment) {
+            AttachmentService::uploadForumPostFileAttachment([
+                'model_id' => $post->id,
+                'model_type' => 'App\\Models\\ForumPost',
+                'forum_post_uuid' => $post->uuid,
+                'file' => $file_attachment
+            ]);
+        }
+      }
+
+      return $this->sendResponse($post, 'You have successfully added a new course.', 201);
+
+    }
+
+    
+    public function update(ForumPostRequest $request, $id)
+    {
+      $post = ForumPost::find($id);
+
+      if (!$post) {
+          return $this->sendResponse([], 'No forum post found.', 404);
+      }
+
+      $post->update($request->all());
+
+      return $this->sendResponse([], 'You have successfully updated a forum post.', 200);
+    }
+
+    public function destroy($id)
+    {
+        $post = ForumPost::find($id);
+
+        if (!$post) {
+            return $this->sendResponse([], 'No forum post found.', 404);
+        }
+
+        $post->delete();
+
+        $post->comments()->delete();
+
+        return $this->sendResponse([], 'You have successfully deleted a forum post.', 200);
+    }
+}

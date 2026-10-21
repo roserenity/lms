@@ -1,0 +1,70 @@
+.rubric {
+    border-collapse: collapse;
+    border-radius: 5px;
+    width: auto;
+}
+.rubric th {
+    background-color: #e0e0e0;
+}
+th.rubric-inner, td.rubric-inner
+{
+    border: 1px solid #bab9b9;
+    padding: 10px;
+}
+.unit-input {
+    /* border: #dfdfdf solid 1px; */
+    border: #bdbdbd solid 1px !important;
+    border-radius: 5px !important;
+    display: inline-flex;
+    overflow: hidden;
+    font-family: sans-serif;
+    width: 10em;
+}
+
+.unit-input__input {
+	border: 0;
+	padding: 0.5em;
+	/* font-size: 1em; */
+	width: 100%;
+	/* font-weight: 600; */
+}
+
+.unit-input__input:focus {
+/* background: #edfffb; */
+	outline: none;
+}
+
+.unit-input__append {
+/* background: #f4f4f4; */
+	padding: 0.5em;
+		/* border: #dfdfdf solid 0; */
+	flex-grow: 0;
+}
+
+.unit-input__append {
+/* border-left-width: 1px; */
+}
+.wrapper {
+overflow-x: scroll !important;
+/* width: 600px; */
+max-width: 800px;
+}
+
+.overflow-column {
+	overflow-x: auto !important;
+}
+
+@media screen and (min-width: 1440px) {
+	.wrapper {
+			max-width: 700px;
+	}
+}
+
+.wrapper::-webkit-scrollbar {
+/* display: none; */
+	height: 5px;
+}
+.wrapper::-webkit-scrollbar-track {
+	box-shadow: inset 0 0 3px grey;
+	border-radius: 6px;
+}

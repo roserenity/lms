@@ -1,0 +1,264 @@
+html { 
+  overflow-y: auto !important;
+}
+
+@supports (-webkit-scrollbar: auto) {
+  html { 
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+  }
+
+  .scroller {
+    scrollbar-width: thin !important;
+  }
+  
+  .v-navigation-drawer__content {
+    scrollbar-width: thin !important;
+  }
+}
+
+pre {
+  text-wrap: wrap !important
+}
+
+.break-word {
+  word-break: break-word !important;
+}
+
+.v-pagination .v-pagination__item {
+  background: none !important;
+  border-color: #BDBDBD !important;
+  border: solid 1px #BDBDBD !important;
+  box-shadow: none !important;
+}
+
+.v-pagination .v-pagination__navigation {
+  border-color: #BDBDBD !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.v-pagination__navigation {
+  margin: 0px !important;
+}
+
+.v-pagination__item {
+  font-size: 10px !important;
+  height: 30px !important;
+  margin: 0.1rem !important;
+  min-width: 30px !important;
+}
+
+.v-btn {
+  text-transform: inherit !important;
+}
+
+.border {
+  border-radius: 10px !important;
+}
+.border-top {
+  border-top-left-radius: 5px !important;
+  border-top-right-radius: 5px !important;
+}
+.border-bottom {
+  border-bottom-left-radius: 5px !important;
+  border-bottom-right-radius: 5px !important;
+}
+.border-left {
+  border-top-left-radius: 5px !important;
+  border-bottom-left-radius: 5px !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+.b5 {
+  border-radius: 5px !important;
+}
+.custom-border {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 0px 2px rgba(0, 0, 0, 0.06), 0px 0px 1px rgba(0, 0, 0, 0.04) !important;
+}
+.pointer {  
+  cursor: pointer !important;
+}
+
+.no-space {
+  letter-spacing: 0px !important;
+}
+
+.input-sm {
+  border: 1px solid #999; 
+  border-radius: 5px; 
+  padding: 5px 5px;
+  font-size: 14px; 
+  font-family: Roboto 'sans-serif';
+  font-weight: 500;
+  color: #545454;
+  outline:none; 
+  width: 70px;
+}
+.general-custom-div {
+  border-color: #BDBDBD !important;
+  border-radius: 8px !important;
+  border: solid 1px #BDBDBD !important;
+  width: 100% !important;
+}
+
+.dashed-custom-div {
+  border-color: #BDBDBD !important;
+  border: dashed 2px #BDBDBD !important;
+  border-radius: 8px !important;
+  width: 100% !important;
+}
+
+.dashed-custom-field.v-text-field--outlined fieldset {
+  border-color: #BDBDBD !important;
+  // border-style: dotted !important;
+  border: dashed 2px #BDBDBD !important;
+  border-radius: 8px !important;
+}
+
+.pointer-cursor:hover {
+  cursor: pointer !important;
+}
+
+.pointer-default:hover {
+  cursor: default !important;
+}
+
+.login-custom-field.v-text-field--outlined fieldset {
+  border-color: #BDBDBD !important;
+  border-radius: 8px !important;
+}
+
+.no-outline-custom-field.v-text-field--outlined fieldset {
+  border-color: transparent !important;
+  border-radius: 5px !important;
+}
+
+.general-custom-field.v-text-field--outlined fieldset {
+  border-color: #BDBDBD !important;
+  border-radius: 5px !important;
+}
+
+.primary-custom-field.v-text-field--outlined:focus fieldset {
+  border-color: #BDBDBD !important;
+  border-radius: 5px !important;
+}
+.general-custom-field.v-text-field--outlined.v-input--is-focused fieldset, .v-text-field--outlined.v-input--has-state fieldset {
+  border-color: #3F5DD0 !important;
+}
+// .theme--light.primary-custom-fieldv-text-field--outline:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot:hover{
+//   border-color: #3F5DD0 !important;
+// }
+// .v-input__icon--append .v-icon { 
+//   color: rgba(63, 93, 208, 0.45);
+// }
+
+// tbody tr:nth-of-type(odd) {
+//   background-color: rgba(63, 93, 208, 0.05);;
+// }
+
+tbody tr:nth-of-type(odd) {
+  background-color: none;
+}
+
+.new_row {
+  background-color: rgba(63, 93, 208, 0.09);
+}
+
+.noline.v-text-field>.v-input__control>.v-input__slot:before {
+  border-style: none !important;
+}
+.noline.v-text-field>.v-input__control>.v-input__slot:after {
+  border-style: none !important;
+}
+
+.hover {
+  cursor: pointer;
+}
+
+.theme--light.v-input--is-disabled input, .theme--light.v-input--is-disabled textarea {
+  color: rgba(0, 0, 0, 0.50) !important;
+}
+
+.box-shadow {
+  border: 2px solid black !important;
+  box-shadow: 10px 10px 0px 2px rgba(40,47,129,1) !important;
+  -webkit-box-shadow: 10px 10px 0px 2px rgba(40,47,129,1) !important;
+  -moz-box-shadow: 10px 10px 0px 2px rgba(40,47,129,1) !important;
+}
+
+.box-shadow-rd {
+  border: 2px solid black !important;
+  box-shadow: 10px 10px 0px 2px rgb(226, 31, 31) !important;
+  -webkit-box-shadow: 10px 10px 0px 2px rgb(226, 31, 31) !important;
+  -moz-box-shadow: 10px 10px 0px 2px rgb(226, 31, 31) !important; 
+}
+
+.course-box-shadow {
+  background-color: rgb(40,47,129) !important;
+  color: white !important;
+  border: 2px solid black !important;  
+  box-shadow: 10px 10px 0px 2px rgba(201,65,4,1) !important;
+  -webkit-box-shadow: 10px 10px 0px 2px rgba(201,65,4,1) !important;
+  -moz-box-shadow: 10px 10px 0px 2px rgba(201,65,4,1)!important;
+}
+
+.caption {
+  font-weight: 500 !important;
+  color: #828282 !important;
+}
+
+.brand_gradient_bg {
+  background: linear-gradient(214deg, rgba(254,193,1,1) 4%, rgba(219,112,3,1) 18%, rgba(201,65,4,1) 56%, rgba(173,5,5,1) 94%, rgba(173,5,5,1) 173%) !important;
+}
+
+.v-slider__tick-label {
+  white-space: break-spaces !important;
+  text-align: center !important;
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+
+.v-slider--horizontal .v-slider__tick:first-child .v-slider__tick-label {
+  transform: translateX(-50%) !important;
+}
+
+.v-slider--horizontal .v-slider__tick:last-child .v-slider__tick-label {
+  transform: translateX(-40%) !important;
+}
+
+.apexcharts-toolbar {
+  z-index: 8 !important;
+}
+
+.v-chip.v-size--default {
+  height: auto !important;
+}
+
+// .v-select > .v-select__selections input {
+//   display: none !important;
+// }s
+.right-dialog {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  min-height: 100% !important;
+}
+
+.absolute {
+  position: absolute !important;
+}
+
+.brand_bg {
+  background-image: linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,0)), url('../../assets/images/landing/campus-building.jpg');
+  background-position: center;
+  background-size: 100% 100% !important;
+}
+
+.apexcharts-toolbar {
+  z-index: 0 !important;
+}
+
+.v-skeleton-loader__image.v-skeleton-loader__bone { height: 100% !important; }

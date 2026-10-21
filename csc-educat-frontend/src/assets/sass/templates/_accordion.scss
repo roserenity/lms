@@ -1,0 +1,16 @@
+.accordion {
+  border-radius: 4px !important;
+  .header {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    font-family: 'Nunito', sans-serif !important;
+    background-color: #F1F1F1 !important;
+  }
+  .active {
+    border: 1px solid #BDBDBD !important;
+  }
+}
+
+.module .v-expansion-panel-content__wrap {
+  padding: 0px 0px 0px 0px !important;
+}

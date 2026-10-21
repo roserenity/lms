@@ -1,0 +1,1634 @@
+openapi: 3.0.3
+info:
+  title: Aster Academy LMS — Tenant API
+  version: 1.0.0
+  description: |
+    API specification for Tenant management and Tenant-domain endpoints.
+
+    ## Two API Surfaces
+
+    ### Central API (Super Admin)
+    Served from the central domain. Requires super-admin Bearer token.
+    Handles tenant CRUD and authentication for the platform operator.
+
+    ### Tenant Domain API
+    Served from the tenant subdomain `{subdomain}.{centralDomain}`.
+    Public routes (no auth) and authenticated routes (Bearer token) for tenant users.
+
+    ## Authentication
+    - Super Admin: OAuth2 Bearer token obtained from `POST /super-admin/login`
+    - Tenant Users: OAuth2 Bearer token obtained from `POST /login` on the tenant subdomain
+
+servers:
+  - url: https://{centralDomain}/v1
+    description: Central API (Super Admin)
+    variables:
+      centralDomain:
+        default: app.example.com
+        description: The central application domain
+  - url: https://{subdomain}.{centralDomain}/v1
+    description: Tenant API (subdomain-based)
+    variables:
+      subdomain:
+        default: tenant1
+        description: Tenant subdomain identifier
+      centralDomain:
+        default: app.example.com
+
+tags:
+  - name: Super Admin Auth
+    description: Super admin authentication (central domain)
+  - name: Tenant Management
+    description: CRUD operations for tenant accounts (central domain, super admin only)
+  - name: Tenant Auth
+    description: User registration and authentication (tenant domain)
+  - name: Tenant Info
+    description: Public tenant branding, categories, and contact (tenant domain)
+  - name: Tenant Courses
+    description: Course catalog browsing (tenant domain, no auth required)
+  - name: Tenant Certificates
+    description: Certificate verification (tenant domain)
+  - name: Tenant Payments
+    description: Payment processing and callbacks (tenant domain)
+  - name: Tenant SCORM
+    description: SCORM Cloud integration callbacks (tenant domain)
+  - name: Tenant User Profile
+    description: Authenticated user profile management (tenant domain)
+  - name: Tenant Notifications
+    description: User notification management (tenant domain)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth2
+
+  schemas:
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID-based identifier derived from subdomain
+          example: mycompany_AbC123
+        tenant_name:
+          type: string
+          example: My Company LMS
+        tenant_description:
+          type: string
+        domain_name:
+          type: string
+          description: Official website URL of the tenant
+          example: https://mycompany.com
+        api_endpoint:
+          type: string
+          description: Tenant subdomain API endpoint (auto-generated from sub_domain)
+          example: mycompany.app.example.com
+        status:
+          type: string
+          enum: [active, inactive]
+        passport_installed:
+          type: boolean
+          description: Whether OAuth client and admin account have been provisioned
+        navigation_background_color:
+          type: string
+          nullable: true
+          example: "#1a1a2e"
+        navigation_banner_color:
+          type: string
+          nullable: true
+        navigation_link_color:
+          type: string
+          nullable: true
+        navigation_text_icon_color:
+          type: string
+          nullable: true
+        navigation_link_inactive_color:
+          type: string
+          nullable: true
+        sidebar_color:
+          type: string
+          nullable: true
+        mini_navigation_background_color:
+          type: string
+          nullable: true
+        mini_navigation_link_color:
+          type: string
+          nullable: true
+        mini_navigation_icon_color:
+          type: string
+          nullable: true
+        mini_navigation_inactive_link_color:
+          type: string
+          nullable: true
+        primary_buttons_color:
+          type: string
+          nullable: true
+        info:
+          $ref: '#/components/schemas/TenantInfo'
+        domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TenantInfo:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+        contact_person:
+          type: string
+          example: Juan dela Cruz
+        email:
+          type: string
+          format: email
+          example: admin@mycompany.com
+          description: Unique across all tenant contacts; used as initial admin login
+        organization:
+          type: string
+          enum: [general_education, corporate, ngo]
+        mobile_no:
+          type: string
+          example: "+639171234567"
+        tel_no:
+          type: string
+          example: "+6328123456"
+
+    Domain:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenant_id:
+          type: string
+        domain:
+          type: string
+          example: mycompany.app.example.com
+
+    Image:
+      type: object
+      properties:
+        id:
+          type: integer
+        imageable_id:
+          type: string
+        imageable_type:
+          type: string
+        image_key:
+          type: string
+          enum: [horizontal_logo, vertical_logo, favicon, carousel]
+          description: |
+            - horizontal_logo: resized to 507×262px
+            - vertical_logo: resized to 241×345px
+            - favicon: stored as-is
+            - carousel: stored as-is
+        url:
+          type: string
+          format: uri
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        title:
+          type: string
+        price:
+          type: number
+          format: float
+        training_hours:
+          type: integer
+        available_until:
+          type: object
+          nullable: true
+          properties:
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+              nullable: true
+        is_free:
+          type: boolean
+        type_of_learning:
+          type: string
+        status:
+          type: string
+        course_code:
+          type: string
+
+    Certificate:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        user:
+          type: object
+          properties:
+            first_name:
+              type: string
+            middle_name:
+              type: string
+              nullable: true
+            last_name:
+              type: string
+            suffix:
+              type: string
+              nullable: true
+        course:
+          type: object
+          properties:
+            title:
+              type: string
+        image:
+          $ref: '#/components/schemas/Image'
+
+    PaginatedResponse:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        data:
+          type: array
+          items: {}
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        from:
+          type: integer
+        to:
+          type: integer
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          description: Payload; shape varies per endpoint
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: The given data was invalid.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    TenantCreateRequest:
+      type: object
+      required:
+        - tenant_name
+        - organization
+        - domain_name
+        - sub_domain
+        - status
+        - tenant_description
+        - contact_person
+        - email
+        - mobile_no
+        - tel_no
+      properties:
+        tenant_name:
+          type: string
+          maxLength: 255
+        organization:
+          type: string
+          enum: [general_education, corporate, ngo]
+        domain_name:
+          type: string
+          maxLength: 255
+          description: Official website URL
+        sub_domain:
+          type: string
+          maxLength: 255
+          description: Unique subdomain prefix; becomes the tenant API endpoint
+        status:
+          type: string
+          enum: [active, inactive]
+          description: Setting to active will provision the admin account and OAuth client
+        tenant_description:
+          type: string
+        contact_person:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Unique across all tenant contacts; used as initial admin email
+        mobile_no:
+          type: string
+        tel_no:
+          type: string
+        "images[]":
+          type: array
+          items:
+            type: string
+            format: binary
+          description: Logo images (jpg, jpeg, png, ico; max 5 MB each)
+        "image_key[]":
+          type: array
+          items:
+            type: string
+            enum: [horizontal_logo, vertical_logo, favicon, carousel]
+          description: Key for each uploaded image (parallel array with images[])
+        navigation_background_color:
+          type: string
+          nullable: true
+        navigation_banner_color:
+          type: string
+          nullable: true
+        navigation_link_color:
+          type: string
+          nullable: true
+        navigation_text_icon_color:
+          type: string
+          nullable: true
+        navigation_link_inactive_color:
+          type: string
+          nullable: true
+        sidebar_color:
+          type: string
+          nullable: true
+        mini_navigation_background_color:
+          type: string
+          nullable: true
+        mini_navigation_link_color:
+          type: string
+          nullable: true
+        mini_navigation_icon_color:
+          type: string
+          nullable: true
+        mini_navigation_inactive_link_color:
+          type: string
+          nullable: true
+        primary_buttons_color:
+          type: string
+          nullable: true
+
+    TenantUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/TenantCreateRequest'
+        - type: object
+          properties:
+            sub_domain:
+              type: string
+              maxLength: 255
+              description: Must be unique excluding current tenant's api_endpoint
+            email:
+              type: string
+              format: email
+              maxLength: 255
+              description: Must be unique excluding current tenant's contact email
+            "image_id[]":
+              type: array
+              items:
+                type: integer
+              description: IDs of existing images to replace (parallel array with images[])
+
+# ==============================================================
+# PATHS
+# ==============================================================
+
+paths:
+
+  # ============================================================
+  # CENTRAL API — Super Admin Auth
+  # ============================================================
+
+  /super-admin/login:
+    post:
+      tags: [Super Admin Auth]
+      summary: Super admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Login successful — returns access token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token:
+                            type: string
+                            description: OAuth2 Bearer token
+        '422':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /super-admin/logout:
+    post:
+      tags: [Super Admin Auth]
+      summary: Super admin logout — revokes current access token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /super-admin/user:
+    get:
+      tags: [Super Admin Auth]
+      summary: Get current super admin profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Super admin object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ============================================================
+  # CENTRAL API — Tenant Management
+  # ============================================================
+
+  /super-admin/tenants:
+    get:
+      tags: [Tenant Management]
+      summary: List all tenants with optional filters and pagination
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: general_education
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Include general education tenants
+        - name: ngo
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Include NGO tenants (OR condition)
+        - name: corporate
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Include corporate tenants (OR condition)
+        - name: active
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Filter to active tenants only
+        - name: inactive
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Filter to inactive tenants only
+        - name: today
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Filter to tenants created today
+        - name: this_week
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Filter to tenants created this week
+        - name: this_month
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Filter to tenants created this month
+        - name: this_year
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+          description: Filter to tenants created this year
+        - name: paginate
+          in: query
+          schema: { type: integer, default: 10 }
+          description: Items per page
+      responses:
+        '200':
+          description: Paginated tenant list with info and domains
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/PaginatedResponse'
+                          - type: object
+                            properties:
+                              data:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/Tenant'
+
+    post:
+      tags: [Tenant Management]
+      summary: Create a new tenant
+      description: |
+        Creates a tenant record, its domain, and tenant info. Uploads logos to S3 (or local storage).
+        If status is `active`, automatically provisions the OAuth client and initial admin account
+        (password: `password`). The tenant database is created and migrated asynchronously.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TenantCreateRequest'
+      responses:
+        '201':
+          description: Tenant created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tenant'
+        '422':
+          description: Validation error (e.g. duplicate sub_domain or email)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /super-admin/tenants/{tenant_id}:
+    parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Tenant identifier (UUID-based id)
+
+    get:
+      tags: [Tenant Management]
+      summary: Get a single tenant with info and domains
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Tenant'
+        '404':
+          description: Tenant not found
+
+    post:
+      tags: [Tenant Management]
+      summary: Update tenant details
+      description: |
+        Uses POST (not PUT) because it accepts file uploads via multipart/form-data.
+        Existing images are replaced using `image_id[]` + `images[]` parallel arrays.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TenantUpdateRequest'
+      responses:
+        '200':
+          description: Tenant updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Tenant'
+        '404':
+          description: Tenant not found
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    delete:
+      tags: [Tenant Management]
+      summary: Delete a tenant
+      description: Deletes the tenant record and its isolated database.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Tenant deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /super-admin/tenants/update/status:
+    post:
+      tags: [Tenant Management]
+      summary: Activate or deactivate a tenant
+      description: |
+        Updating status to `active` will provision the OAuth client and initial admin account
+        if they have not been set up yet (`passport_installed = false`).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenant_id, tenant_status]
+              properties:
+                tenant_id:
+                  type: string
+                  description: Must exist in the tenants table
+                tenant_status:
+                  type: string
+                  enum: [active, inactive]
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Tenant'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /super-admin/tenants/remove/photo/{tenant_id}:
+    put:
+      tags: [Tenant Management]
+      summary: Remove a tenant logo image by key
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: tenant_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image_key]
+              properties:
+                image_key:
+                  type: string
+                  enum: [horizontal_logo, vertical_logo, favicon, carousel]
+      responses:
+        '200':
+          description: Photo removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Tenant not found
+
+  /tenants/domain:
+    get:
+      tags: [Tenant Management]
+      summary: List valid (active) tenant domain names
+      description: No authentication required. Returns an array of active tenant API endpoints.
+      responses:
+        '200':
+          description: Array of active domain strings
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                          example: mycompany.app.example.com
+
+  # ============================================================
+  # TENANT DOMAIN — Authentication
+  # All routes use subdomain server; middleware: InitializeTenancyByDomain,
+  # PreventAccessFromCentralDomains, TenantActivated
+  # ============================================================
+
+  /register:
+    post:
+      tags: [Tenant Auth]
+      summary: Register a new user account on the tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /login:
+    post:
+      tags: [Tenant Auth]
+      summary: User login — rate limited to 3 attempts per minute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token:
+                            type: string
+        '422':
+          description: Invalid credentials
+        '429':
+          description: Too many login attempts
+
+  /logout:
+    post:
+      tags: [Tenant Auth]
+      summary: User logout
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /email/verification-notification:
+    post:
+      tags: [Tenant Auth]
+      summary: Resend email verification link
+      responses:
+        '200':
+          description: Verification email sent
+
+  /email/verify:
+    get:
+      tags: [Tenant Auth]
+      summary: Verify email address via signed URL
+      responses:
+        '200':
+          description: Email verified
+
+  /forgot-password:
+    post:
+      tags: [Tenant Auth]
+      summary: Send password reset link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset link sent
+
+  /reset-password/{token}:
+    get:
+      tags: [Tenant Auth]
+      summary: Show password reset form (Blade view)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML reset password form
+
+  /reset-password:
+    post:
+      tags: [Tenant Auth]
+      summary: Submit new password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, email, password, password_confirmation]
+              properties:
+                token:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Password reset successfully
+        '422':
+          description: Validation error
+
+  # ============================================================
+  # TENANT DOMAIN — Public Info
+  # ============================================================
+
+  /tenants/info:
+    get:
+      tags: [Tenant Info]
+      summary: Get current tenant branding and organization info
+      description: |
+        Returns the tenant `data` JSON column (branding/colors) and organization type.
+        Sensitive fields (`tenancy_db_name`, `id`, `tenant_id`) are hidden.
+      responses:
+        '200':
+          description: Tenant info
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: object
+                            description: Tenant data field (branding, colors, etc.)
+                          info:
+                            type: object
+                            properties:
+                              organization:
+                                type: string
+                                enum: [general_education, corporate, ngo]
+        '404':
+          description: Tenant not found
+
+  /tenants/custom-registration/pages:
+    get:
+      tags: [Tenant Info]
+      summary: Get all custom registration pages configured for this tenant
+      responses:
+        '200':
+          description: List of custom registration page definitions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/class-categories:
+    get:
+      tags: [Tenant Info]
+      summary: Get all class categories
+      responses:
+        '200':
+          description: Full list of class categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/random/class-categories:
+    get:
+      tags: [Tenant Info]
+      summary: Get 3 random class categories with their published courses
+      description: Each category includes courses with id, uuid, title, and available_until.
+      responses:
+        '200':
+          description: 3 random class categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/training-credits:
+    get:
+      tags: [Tenant Info]
+      summary: Get all training credit options
+      responses:
+        '200':
+          description: List of training credit names
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/backgrounds:
+    get:
+      tags: [Tenant Info]
+      summary: Get the landing page background asset
+      description: Returns the first active background asset ordered by sort_no.
+      responses:
+        '200':
+          description: Landing page background asset with image
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/advisories:
+    get:
+      tags: [Tenant Info]
+      summary: Get active advisories ordered by sort_no
+      responses:
+        '200':
+          description: Active advisories with images
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/send/contact/mail:
+    post:
+      tags: [Tenant Info]
+      summary: Send a contact email to the tenant's contact address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, subject, message]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                subject:
+                  type: string
+                  maxLength: 255
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Email dispatched
+        '422':
+          description: Validation error
+        '500':
+          description: Email service unavailable
+
+  # ============================================================
+  # TENANT DOMAIN — Course Catalog
+  # ============================================================
+
+  /tenants/courses:
+    get:
+      tags: [Tenant Courses]
+      summary: List all published (non-draft) courses — minimal fields
+      description: Returns id, uuid, title, type_of_learning, status, available_until, price, is_free.
+      responses:
+        '200':
+          description: Course list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Course'
+
+  /tenants/courses/all:
+    post:
+      tags: [Tenant Courses]
+      summary: Get published courses with filtering and optional pagination
+      description: |
+        When `paginate` is provided, returns a paginated response with modules_count and
+        zoom_meetings_count. Without `paginate`, returns a flat array with minimal fields.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paginate:
+                  type: integer
+                  description: Items per page; omit for unpaginated full list
+                type_of_learning:
+                  type: string
+                search:
+                  type: string
+                  description: Searches title and course_code
+                course_name_sort:
+                  type: string
+                  enum: [asc, desc]
+                classes:
+                  type: string
+                  description: Filter by class_code (class category code)
+                price_min:
+                  type: number
+                  description: Minimum price (inclusive)
+                price_max:
+                  type: number
+                  description: Maximum price (inclusive)
+      responses:
+        '200':
+          description: Course list (paginated or flat based on paginate param)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/courses/free:
+    get:
+      tags: [Tenant Courses]
+      summary: Get free published courses
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter by course title
+      responses:
+        '200':
+          description: Free courses with modules_count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/courses/{course_uuid}:
+    get:
+      tags: [Tenant Courses]
+      summary: Get a single course with modules and uploader
+      parameters:
+        - name: course_uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Full course details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Course'
+        '404':
+          description: Course not found
+
+  /tenants/browse-courses:
+    get:
+      tags: [Tenant Courses]
+      summary: Browse paid courses with date and learning-type filters
+      description: Returns only `is_free = false` published courses, paginated.
+      parameters:
+        - name: paginate
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: type_of_learning
+          in: query
+          schema: { type: string }
+        - name: training_credits
+          in: query
+          schema: { type: string }
+        - name: date
+          in: query
+          schema: { type: string }
+          description: |
+            YYYY-MM to filter courses whose available_until overlaps that month.
+            Pass `all` to skip date filtering.
+      responses:
+        '200':
+          description: Paginated paid course list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PaginatedResponse'
+
+  /tenants/course-availability-dates:
+    get:
+      tags: [Tenant Courses]
+      summary: Get sorted unique months when paid courses are available
+      description: Returns YYYY-MM strings derived from available_until date ranges of published paid courses.
+      responses:
+        '200':
+          description: Sorted array of YYYY-MM strings
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                          example: "2025-06"
+
+  # ============================================================
+  # TENANT DOMAIN — Certificates
+  # ============================================================
+
+  /tenants/view/certificate/{certificate_uuid}:
+    get:
+      tags: [Tenant Certificates]
+      summary: Verify and view a certificate
+      description: Public endpoint for QR code verification links.
+      parameters:
+        - name: certificate_uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Certificate with user, course, and image
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Certificate'
+        '404':
+          description: Certificate not found
+
+  # ============================================================
+  # TENANT DOMAIN — Payments
+  # ============================================================
+
+  /tenants/payment-status/check:
+    get:
+      tags: [Tenant Payments]
+      summary: Check payment status and auto-enroll on success
+      description: |
+        Proxies to the payment gateway (`PAYMENT_GATEWAY_URL`) `/paymentStatusCheck`. If status = 1, auto-creates enrollments
+        for all invoices matching the reference ID.
+      parameters:
+        - name: ref_id
+          in: query
+          required: true
+          schema: { type: string }
+        - name: email
+          in: query
+          required: true
+          schema: { type: string, format: email }
+        - name: amount
+          in: query
+          required: true
+          schema: { type: number }
+      responses:
+        '200':
+          description: Payment status response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /tenants/request/official-receipt:
+    post:
+      tags: [Tenant Payments]
+      summary: Request official receipt as PDF download
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, course_uuid, reference_id, email]
+              properties:
+                user_id:
+                  type: integer
+                  description: Must exist in users table
+                course_uuid:
+                  type: string
+                  format: uuid
+                  description: Must exist in courses table
+                reference_id:
+                  type: string
+                  description: Must exist in invoices table
+                email:
+                  type: string
+                  format: email
+                  description: Must exist in users table
+      responses:
+        '200':
+          description: PDF receipt stream
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No completed online invoice found for the given parameters
+        '422':
+          description: Validation error
+
+  /tenants/checkout/callback:
+    post:
+      tags: [Tenant Payments]
+      summary: Payment gateway callback — auto-enrolls on success
+      description: |
+        Updates invoice status. If status = 1, creates enrollments for all invoices
+        matching ref_id and renders a success page (HTML response, not JSON).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ref_id:
+                  type: string
+                status:
+                  type: string
+                  description: "1 = successful payment"
+      responses:
+        '200':
+          description: Callback processed; renders HTML success page on payment success
+
+  # ============================================================
+  # TENANT DOMAIN — SCORM Cloud Integration
+  # ============================================================
+
+  /tenants/course/upload/callback:
+    post:
+      tags: [Tenant SCORM]
+      summary: SCORM Cloud course upload job callback
+      description: |
+        Called by SCORM Cloud when an async upload job completes. On success:
+        sets the course title, applies configuration, and generates a preview link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jobId:
+                  type: string
+                  description: Matches `scorms.job_id`
+                status:
+                  type: string
+                  description: COMPLETED or error status from SCORM Cloud
+      responses:
+        '200':
+          description: Callback received and scorm record updated
+
+  /tenants/course/registration/postback:
+    post:
+      tags: [Tenant SCORM]
+      summary: SCORM Cloud learner registration progress postback
+      description: |
+        Called by SCORM Cloud when a learner's progress changes. Updates
+        ScormRegistrationProgress and ScormRegistrationInteraction records.
+        Marks StudentModuleProgress as done when registrationCompletion = COMPLETED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: SCORM registration ID
+                registrationCompletion:
+                  type: string
+                  enum: [COMPLETED, INCOMPLETE, UNKNOWN]
+                registrationSuccess:
+                  type: string
+                totalSecondsTracked:
+                  type: number
+                firstAccessDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                lastAccessDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                completedDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                learner:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Matches users.id in the tenant database
+                activityDetails:
+                  type: object
+                  description: SCORM xAPI activity tree with runtime and interactions
+      responses:
+        '200':
+          description: Postback received and progress records updated
+
+  # ============================================================
+  # TENANT DOMAIN — Authenticated User Profile
+  # All routes below require Bearer token (auth:api middleware)
+  # ============================================================
+
+  /user:
+    get:
+      tags: [Tenant User Profile]
+      summary: Get the currently authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Authenticated user object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /update/password:
+    put:
+      tags: [Tenant User Profile]
+      summary: Update user password
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_password:
+                  type: string
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Password updated
+        '422':
+          description: Validation error
+
+  /update/accepted-terms:
+    put:
+      tags: [Tenant User Profile]
+      summary: Accept terms and conditions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Terms accepted flag updated
+
+  /update/details:
+    put:
+      tags: [Tenant User Profile]
+      summary: Update user profile details
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                middle_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                suffix:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: User details updated
+
+  /update/profile/photo:
+    post:
+      tags: [Tenant User Profile]
+      summary: Upload or replace profile photo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile photo updated
+
+  /update/info-update-flag:
+    put:
+      tags: [Tenant User Profile]
+      summary: Clear the needs-info-update flag
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Flag updated
+
+  /login/history:
+    get:
+      tags: [Tenant User Profile]
+      summary: Get user login history
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Login history records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /activity-log:
+    get:
+      tags: [Tenant User Profile]
+      summary: Get user activity log (Spatie activitylog)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Activity log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ============================================================
+  # TENANT DOMAIN — Notifications
+  # ============================================================
+
+  /user/notifications:
+    get:
+      tags: [Tenant Notifications]
+      summary: Get all notifications for the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /user/mark/notification:
+    post:
+      tags: [Tenant Notifications]
+      summary: Mark a specific notification as read
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notification_id:
+                  type: string
+      responses:
+        '200':
+          description: Notification marked as read
+
+  /user/mark/all/notifications:
+    get:
+      tags: [Tenant Notifications]
+      summary: Mark all notifications as read
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read

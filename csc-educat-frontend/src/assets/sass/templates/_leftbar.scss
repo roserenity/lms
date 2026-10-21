@@ -1,0 +1,31 @@
+.drawer {
+  .icon {
+    color: rgba(73, 115, 41, 0.38) !important;
+    // font-size: 22px !important;
+    font-weight: 700 !important;
+  }
+  .title {
+    font-family: 'Roboto', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: color(dark-1) !important;
+  }
+  .subtitle {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+  }
+  .li {
+    font-family: 'Nunito', sans-serif !important;
+    background-color: transparent !important;
+  }
+  .li-active {
+    background-color: #E8EBF9 !important;
+    color: #3F5DD0 !important;
+    border-right: 5px solid #3F5DD0;
+  }
+  .icon-active {
+    color: color(success) !important;
+  }
+  
+}

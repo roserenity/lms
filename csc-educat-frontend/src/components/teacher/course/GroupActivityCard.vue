@@ -1,0 +1,111 @@
+<template>
+    <v-card outlined class="mx-3 b5 sortable" :class="status == 'PUBLISH' && 'ml-5'">
+      <div class="ma-1 col-xl-9 col-lg-10">
+        <label :class="status != 'PUBLISH' ? 'ml-9' : 'ml-3'" class="caption">GROUP ACTIVITY</label>
+        <section class="d-flex align-start" >
+          <v-icon class="mt-2 mr-1" v-if="!$isReadOnly.isReadOnly(status, permission)">
+            mdi-drag
+          </v-icon>
+          <section class="general-custom-div pointer-cursor d-flex flex-column ">
+            <v-text-field
+              dense
+              outlined
+              hide-details
+              prepend-inner-icon="mdi-puzzle-plus-outline"
+              class="no-outline-custom-field roboto f14 fw500 secondary--text"
+              v-model="item.title"
+              readonly
+            >
+              <template v-slot:append>
+                <v-menu offset-y transition="slide-y-transition" bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-bind="attrs" v-on="on" style="margin: -6px" dense>
+                      <v-icon size="20"> mdi-dots-vertical </v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list dense class="custom-border">
+                    <v-list-item link @click="$emit('viewGroupActivity', { ...item, is_topic: true, topic_or_sub_topic_id: topic_or_subtopic_id, topic_or_subtopic_title: topic_or_subtopic_title })">
+                      <v-list-item-title class="roboto f14 d-flex align-center">
+                        <v-icon size="22" class="mr-1">mdi-eye-outline</v-icon>
+                        <div class="">View Group Activity</div>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
+                      v-if="!$isReadOnly.isReadOnly(status, permission)"
+                      link
+                      @click="remove(item)"
+                    >
+                      <v-list-item-title class="roboto f14 d-flex align-center">
+                        <v-icon size="22" class="mr-1">mdi-delete-outline</v-icon>
+                        <div class="">Delete Group Activity</div>
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
+            </v-text-field>
+          </section>
+        </section>
+        <DeleteDialog 
+          :dialog="dialog"
+          type="Group Activity"
+          :loading="loading"
+          @close="dialog=false"
+          @delete="deleteGroupActivity"
+        />
+      </div>
+    </v-card>
+  </template>
+  
+  <script>
+  import ViewMaterial from "./ViewMaterial.vue";
+  import { mapActions, mapState, mapMutations } from "vuex";
+
+  export default {
+    props: ["item", "topic_or_subtopic_id", "topic_or_subtopic_title", "status", "permission"],
+    components: { ViewMaterial },
+    data: () => ({
+      dialog: false,
+      itemToRemove: null,
+      loading: false
+    }),
+    methods: {
+      ...mapMutations([
+        'alertMutation'
+      ]),
+
+      ...mapActions("instructor", [
+        "deleteGroupActivityAction",
+      ]),
+
+      remove(val) {
+        this.itemToRemove = val;
+        this.dialog = true;
+      },
+
+      deleteGroupActivity(){
+        this.loading = true
+        this.deleteGroupActivityAction({ id: this.itemToRemove.id, course_id: this.$route.params.id }).then(() => {
+          this.dialog = false
+          this.alertMutation({
+            show: true,
+            text: 'Group Activity successfully deleted',
+            type: "success"
+          })
+          this.loading = false
+          this.$emit('updateModules')
+        }).catch(() => {
+          this.dialog = false
+          this.loading = false
+          this.alertMutation({
+            show: true,
+            text: 'Something went wrong in deleting your group activity',
+            type: "error"
+          })
+        })
+      },
+      
+    }
+  };
+  </script>
+  

@@ -1,0 +1,111 @@
+.timeline {
+  position: relative;
+  margin: 0 auto;
+  margin-left: 20px;
+}
+/* line */
+.timeline::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  background-color: #D0D4E2;
+  top: 0;
+  bottom: 0;
+  margin-left: 4px;
+}
+
+/* .active.timeline::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  background-color: #b52210;
+  top: 0;
+  bottom: 0;
+  margin-left: 4px;
+} */
+
+.timeline-container {
+  padding: 0px 0px;
+  position: relative;
+  background-color: inherit;
+}
+/* circle */
+.topic.timeline-container::after {
+  content: '';
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  left: -0.7px;
+  background-color: #fff;
+  border:  2px solid #D0D4E2;
+  border-radius: 50%;
+  z-index: 1;
+  top: 15px;
+}
+.subtopic.timeline-container::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #fff;
+  border:  2px solid #D0D4E2;
+  border-radius: 50%;
+  z-index: 1;
+  top: 15px;
+  left: 1px;
+}
+.assessments.timeline-container::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #fff;
+  border:  2px solid #D0D4E2;
+  border-radius: 50%;
+  z-index: 1;
+  top: 15px;
+  left: 2px;
+}
+.topic.timeline-container.active::after {
+  content: '';
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  left: -0.7px;
+  background-color: #3F5DD0;
+  border:  2px solid #3F5DD0;
+  border-radius: 50%;
+  z-index: 1;
+  top: 15px;
+}
+.subtopic.timeline-container.active::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #3F5DD0;
+  border:  2px solid #3F5DD0;
+  border-radius: 50%;
+  z-index: 1;
+  top: 15px;
+  left: 1px;
+}
+.assessments.timeline-container.active::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #3F5DD0;
+  border:  2px solid #3F5DD0;
+  border-radius: 50%;
+  z-index: 1;
+  top: 15px;
+  left: 2px;
+}
+.timeline-content {
+  position: relative;
+  margin: 0px 5px;
+}
+.timeline-content-assessment{
+  position: relative;
+}

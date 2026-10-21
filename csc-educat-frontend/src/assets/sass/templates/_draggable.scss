@@ -1,0 +1,16 @@
+.flip-list-move {
+  transition: transform 0.5s;
+}
+.ghost {
+  // border-left: 5px solid #00a14b !important;
+  border: 2px dashed rgba(63, 93, 208, 0.12) !important; 
+  // border-radius: 10px !important; 
+  box-sizing: border-box !important;
+  opacity: 0.5;
+}
+.sortable {
+  cursor: grabbing !important;
+}
+.sortable-drag {
+  opacity: 0 !important;
+}

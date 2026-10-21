@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Http\Requests\Tenants;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UserAccountRoleRequest extends FormRequest
+{
+  /**
+  * Determine if the user is authorized to make this request.
+  *
+  * @return bool
+  */
+  public function authorize()
+  {
+    return true;
+  }
+
+  /**
+  * Get the validation rules that apply to the request.
+  *
+  * @return array
+  */
+  public function rules()
+  {
+    return [
+      'user_id' => 'required',
+      'role' => 'in:USER,INSTRUCTOR',
+    ];
+  }
+
+  public function messages()
+  {
+    return [
+        'role.in' => 'The selected role is invalid. Please select from (user or instructor).',
+    ];
+  }
+}

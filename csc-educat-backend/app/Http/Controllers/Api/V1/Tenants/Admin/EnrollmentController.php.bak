@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Tenants\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Resources\Tenants\Admin\UserManualEnrollmentResource;
+use App\Models\Enrollment;
+use Illuminate\Http\Request;
+use App\Mail\Tenants\Course\CourseEnrollment;
+use App\Mail\Tenants\Course\ManualCourseEnrollmentApprove;
+use App\Mail\Tenants\Course\ManualCourseEnrollmentDecline;
+
+use App\Models\Course;
+use App\Models\User;
+use App\Models\Invoice;
+
+class EnrollmentController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth.admin');
+    }
+
+    public function showEnrolledCourses($user_id)
+    {
+        $user = User::with([
+            'enrollments' => function ($enrollments) {
+                return $enrollments->with([
+                    'course' => function ($course) {
+                        return $course->with([
+                            'uploader',
+                            'class_categories'
+                        ]);
+                    }
+                ]);
+            }
+        ])
+            ->where('id', $user_id)
+            ->first();
+
+        return $this->sendResponse($user, 'Enrolled courses.', 200);
+    }
+
+    public function enrollCourses($user_id, Request $request)
+    {
+        $request->validate([
+            'course_id.*' => 'required|exists:courses,id'
+        ]);
+
+        $user = User::find($user_id);
+
+        foreach ($request->course_id as $course) {
+            Enrollment::firstOrCreate([
+                'user_id' => $user_id,
+                'course_id' => $course
+            ]);
+        }
+
+        $enrolled_courses = Course::whereIn('id', $request->course_id)->get();
+
+        Mail::to($user->email)->send(new CourseEnrollment([
+            'name' => $user->full_name,
+            'courses' => $enrolled_courses,
+            'url' => tenancy()->tenant->domain_name,
+            'tenant_id' => tenancy()->tenant->id
+        ]));
+
+        return $this->sendResponse([], 'Successfully enrolled.', 200);
+    }
+
+    public function deleteEnrolledCourse($enrollment_id, Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'course_id' => 'required|exists:courses,id'
+        ]);
+
+        $enrollment = Enrollment::where('id', $enrollment_id)
+            ->where('user_id', $request->user_id)
+            ->where('course_id', $request->course_id)
+            ->delete();
+
+        if (!$enrollment) {
+            return $this->sendResponse([], 'Data not found.', 404);
+        }
+
+        return $this->sendResponse([], 'Enrollment deleted.', 200);
+    }
+
+    public function showOfflineManualEnrollees()
+    {
+        $users = User::has('invoices')
+            ->withCount('invoices as courses_count')
+            ->get();
+
+        return $this->sendResponse(UserManualEnrollmentResource::collection($users), 'List of offline manual enrollees.', 200);
+    }
+
+    public function showOfflineManualEnrollee($user_id)
+    {
+        $user = User::with([
+            'invoices' => function ($invoices) {
+                return $invoices->with(['course', 'image', 'enroll_by']);
+            }
+        ])
+            ->find($user_id);
+
+        if (!$user) {
+            return $this->sendResponse([], 'No user found.', 404);
+        }
+
+        return $this->sendResponse($user, 'User manual enrollment details.', 200);
+    }
+
+    public function updateInvoiceStatus(Request $request, $invoice_id)
+    {
+        $request->validate([
+            'status' => 'required|in:1,2,3'
+        ]);
+
+        $invoice = Invoice::with(['enrollee', 'course'])->where('id', $invoice_id)->first();
+
+        $invoice->update(['status' => $request->status]);
+
+        $data = [
+            'name' => $invoice->enrollee->full_name,
+            'course_uuid' => $invoice->course->uuid,
+            'course_title' => $invoice->course->title,
+            'course_description' => $invoice->course->description,
+            'course_image' => $invoice->course->image ? $invoice->course->image->url : NULL,
+            'url' => tenancy()->tenant->domain_name,
+            'tenant_id' => tenancy()->tenant->id
+        ];
+
+        if ($invoice->status == '1') {
+            Enrollment::firstOrCreate([
+                'user_id' => $invoice->user_id,
+                'course_id' => $invoice->course_id
+            ]);
+            Mail::to($invoice->enrollee->email)->send(new ManualCourseEnrollmentApprove($data));
+        } else if ($invoice->status == '3') {
+            Mail::to($invoice->enrollee->email)->send(new ManualCourseEnrollmentDecline($data));
+        }
+
+        return $this->sendResponse([], 'Status updated!', 200);
+    }
+}

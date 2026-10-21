@@ -1,0 +1,12 @@
+.tabs {
+  .item {
+    font-size: 16px !important; 
+    letter-spacing: .5px !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+  }
+  .active {
+    background-color: #fff !important;
+  }
+}

@@ -1,0 +1,14 @@
+User-agent: *
+Disallow: /unverified
+Disallow: /dashboard/
+Disallow: /instructor/
+Disallow: /super-admin/
+Disallow: /super-admin/login
+Disallow: /404
+Disallow: /403
+Disallow: /419
+Disallow: /error
+Disallow: /reset-password/
+Disallow: /verify-email
+Disallow: /validate-certificate/
+Disallow: /admin

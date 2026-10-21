@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible">
+    
+    <meta name="description" content="Aster Academy LMS is a learning management platform for courses, assessments and certification.">
+    
+    <link rel='apple-touch-icon' sizes="180x180" href="/img/icons/apple-touch-icon.png">
+    <link rel='icon' type="image/png" sizes="32x32" href="/img/icons/favicon-32x32.png">
+    <link rel='icon' type="image/png" sizes="16x16" href="/img/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <link rel='manifest' href="/site.webmanifest?v=1">
+    <link rel="mask-icon" href="/img/icons/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="/img/icons/favicon.ico">
+    <meta name="apple-mobile-web-app-title" content="Aster Academy LMS">
+    <meta name="application-name" content="Aster Academy LMS">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+    
+    <title>Aster Academy LMS</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+    <% if (process.env.VUE_APP_GA_TRACKING_ID) { %>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= process.env.VUE_APP_GA_TRACKING_ID %>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '<%= process.env.VUE_APP_GA_TRACKING_ID %>', {
+        cookie_flags: 'SameSite=None;Secure'
+      });
+    </script>
+    <% } %>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+  </body>
+</html>

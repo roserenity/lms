@@ -1,0 +1,19 @@
+.dialog {
+  .header {
+    border-top: 10px solid color('success') !important;
+  }
+}
+
+.change-pass-modal {
+  background-image: url("../images/change-pass-bg.png");
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size:auto;
+}
+
+.success-pass-modal {
+  background-image: url("../images/change-pass-bg2.png");
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size:auto;
+}

@@ -1,0 +1,171 @@
+# Local development stack. Run `docker compose up --build`, then open:
+#   App      http://localhost:8090   (admin@mail.com / instructor@mail.com / user@mail.com, password: password)
+#   API      http://localhost:8000
+#   Mail     http://localhost:8026   (every outgoing email is caught here)
+#   Files    http://localhost:9001   (RustFS console, lmsadmin / lmsadmin123)
+#
+# The credentials below are throwaway values for local use only.
+
+x-backend: &backend
+  build: ./csc-educat-backend
+  environment: &backend-env
+    APP_NAME: Aster Academy LMS
+    APP_ENV: local
+    APP_DEBUG: "true"
+    # APP_URL is used to build links back to the frontend (email verification, certificates).
+    APP_URL: http://localhost:8090
+    # asset() links (certificates, invoices, exports) point at files the API serves.
+    ASSET_URL: http://localhost:8000
+    APP_DOMAIN: localhost:8000
+    FRONTEND_URL: http://localhost:8090
+    TENANT_ID: local
+    TENANT_NAME: Aster Academy LMS
+    LOG_CHANNEL: stderr
+
+    DB_CONNECTION: mysql
+    DB_HOST: mysql
+    DB_HOST_WRITE: mysql
+    DB_HOST_READ1: mysql
+    DB_HOST_READ2: mysql
+    DB_HOST_READ3: mysql
+    DB_PORT: 3306
+    DB_DATABASE: lms
+    DB_USERNAME: root
+    DB_PASSWORD: secret
+
+    REDIS_HOST: redis
+    CACHE_DRIVER: redis
+    QUEUE_CONNECTION: redis
+    BROADCAST_DRIVER: redis
+    SESSION_DRIVER: file
+
+    MAIL_MAILER: smtp
+    MAIL_HOST: mailpit
+    MAIL_PORT: 1025
+    MAIL_FROM_ADDRESS: noreply@lms.local
+
+    # RustFS stands in for S3.
+    FILESYSTEM_DRIVER: s3
+    AWS_ACCESS_KEY_ID: lmsadmin
+    AWS_SECRET_ACCESS_KEY: lmsadmin123
+    AWS_DEFAULT_REGION: us-east-1
+    AWS_BUCKET: lms
+    AWS_ENDPOINT: http://storage:9000
+    AWS_URL: http://localhost:9000/lms
+    AWS_USE_PATH_STYLE_ENDPOINT: "true"
+  volumes:
+    - backend-storage:/var/www/html/storage
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: lms
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8026:8025"
+
+  storage:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: lmsadmin
+      RUSTFS_SECRET_KEY: lmsadmin123
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - storage-data:/data
+
+  # Creates the bucket and makes it publicly readable, then exits.
+  storage-init:
+    image: amazon/aws-cli:latest
+    depends_on:
+      - storage
+    environment:
+      AWS_ACCESS_KEY_ID: lmsadmin
+      AWS_SECRET_ACCESS_KEY: lmsadmin123
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://storage:9000
+      BUCKET_POLICY: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::lms/*"]}]}'
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        until aws s3 ls >/dev/null 2>&1; do sleep 1; done
+        aws s3api head-bucket --bucket lms 2>/dev/null || aws s3 mb s3://lms
+        aws s3api put-bucket-policy --bucket lms --policy "$$BUCKET_POLICY"
+
+  api:
+    <<: *backend
+    environment:
+      <<: *backend-env
+      RUN_SETUP: "1"
+      PHP_CLI_SERVER_WORKERS: 4
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/') === false ? 1 : 0);"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  queue:
+    <<: *backend
+    command: php artisan queue:work --tries=3
+    depends_on:
+      api:
+        condition: service_healthy
+
+  socket:
+    build:
+      context: ./csc-educat-backend
+      dockerfile: docker/socket.Dockerfile
+    environment:
+      REDIS_HOST: redis
+    ports:
+      - "6002:6002"
+    depends_on:
+      - redis
+
+  web:
+    build:
+      context: ./csc-educat-frontend
+      args:
+        VUE_APP_NAME: Aster Academy LMS
+        VUE_APP_API: http://localhost:8000/v1
+        VUE_APP_TENANT_API: http://localhost:8000
+        VUE_APP_DOMAIN: http://localhost:8090
+        VUE_APP_LANDING_DOMAIN: http://localhost:8090
+        VUE_APP_ASSET_PATH: http://localhost:9000/lms
+        VUE_APP_AWS_S3: http://localhost:9000/lms
+    ports:
+      - "8090:80"
+    depends_on:
+      - api
+
+volumes:
+  mysql-data:
+  storage-data:
+  backend-storage:
